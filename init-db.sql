@@ -47,11 +47,27 @@ CREATE TABLE IF NOT EXISTS `video` (
   `hasWisdomCourse` tinyint DEFAULT '0',
   `teacher` varchar(100) DEFAULT NULL,
   `userId` int NOT NULL,
+  `reviewStatus` enum('pending', 'approved', 'rejected') DEFAULT 'pending',
   `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
   `updatedAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
   PRIMARY KEY (`id`),
   KEY `FK_video_user` (`userId`),
   CONSTRAINT `FK_video_user` FOREIGN KEY (`userId`) REFERENCES `user` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- 视频审核记录表
+CREATE TABLE IF NOT EXISTS `video_review` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `videoId` int NOT NULL,
+  `adminId` int NOT NULL,
+  `status` enum('approved', 'rejected') NOT NULL,
+  `reason` text,
+  `createdAt` datetime(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+  PRIMARY KEY (`id`),
+  KEY `FK_review_video` (`videoId`),
+  KEY `FK_review_admin` (`adminId`),
+  CONSTRAINT `FK_review_video` FOREIGN KEY (`videoId`) REFERENCES `video` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `FK_review_admin` FOREIGN KEY (`adminId`) REFERENCES `user` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- 评论表
@@ -94,7 +110,8 @@ CREATE TABLE IF NOT EXISTS `danmu` (
 
 -- 创建管理员用户 (密码为: admin123)
 INSERT INTO `user` (`username`, `password`, `role`) VALUES 
-('admin', '$2b$10$JqOqD4U8OYQh3kNdvO4Mxeih1YnB6gCfmnN6J/mKgqVDh1hiZlKOq', 'admin');
+('admin', '$2b$10$JqOqD4U8OYQh3kNdvO4Mxeih1YnB6gCfmnN6J/mKgqVDh1hiZlKOq', 'admin'),
+('admin1', '$2b$10$w.ODz3QkGElRfFlVXDZy6uaCKXgGcQmKnnsqGlVuCLYqBNCUz.Rl.', 'admin');
 
 -- 创建普通用户 (密码为: password123)
 INSERT INTO `user` (`username`, `password`, `avatar`, `bio`) VALUES 

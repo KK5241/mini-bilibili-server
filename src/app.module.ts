@@ -15,6 +15,8 @@ import { UploadsModule } from './uploads/uploads.module';
 import { ChatMessage } from './entities/chat-message.entity';
 import { ChatConversation } from './entities/chat-conversation.entity';
 import { ChatModule } from './chat/chat.module';
+import { AdminModule } from './admin/admin.module';
+import { VideoReview } from './entities/video-review.entity';
 
 @Module({
   imports: [
@@ -36,7 +38,8 @@ import { ChatModule } from './chat/chat.module';
         UserVideoInteraction, 
         ViewHistory,
         ChatMessage,
-        ChatConversation
+        ChatConversation,
+        VideoReview
       ],
       synchronize: false, // 不要在生产环境使用
     }),
@@ -46,6 +49,7 @@ import { ChatModule } from './chat/chat.module';
     AuthModule,
     UploadsModule,
     ChatModule,
+    AdminModule,
   ],
 })
 export class AppModule {} 

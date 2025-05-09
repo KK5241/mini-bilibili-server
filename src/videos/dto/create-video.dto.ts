@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsUrl } from 'class-validator';
+import { IsNotEmpty, IsString, IsOptional, IsBoolean, IsUrl, IsEnum } from 'class-validator';
 
 export class CreateVideoDto {
   @IsNotEmpty({ message: '标题不能为空' })
@@ -33,4 +33,8 @@ export class CreateVideoDto {
   @IsOptional()
   @IsString({ message: '教师姓名必须是字符串' })
   teacher?: string;
+  
+  @IsOptional()
+  @IsEnum(['文学', '理学', '计算机', '英语', '金融', '农学', '建筑学'], { message: '分类必须是指定值之一' })
+  category?: string;
 } 

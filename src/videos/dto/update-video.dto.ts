@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsBoolean, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsBoolean, IsUrl, IsEnum } from 'class-validator';
 
 export class UpdateVideoDto {
   @IsOptional()
@@ -33,4 +33,8 @@ export class UpdateVideoDto {
   @IsOptional()
   @IsString({ message: '教师姓名必须是字符串' })
   teacher?: string;
+  
+  @IsOptional()
+  @IsEnum(['文学', '理学', '计算机', '英语', '金融', '农学', '建筑学'], { message: '分类必须是指定值之一' })
+  category?: string;
 } 

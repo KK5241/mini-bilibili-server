@@ -122,4 +122,10 @@ export class VideosController {
   ) {
     return this.videosService.getUserVideoInteraction(id, req.user.id);
   }
+
+  @Get('my')
+  @UseGuards(JwtAuthGuard)
+  async getMyVideos(@Request() req) {
+    return this.videosService.getVideosByUserId(req.user.id);
+  }
 } 

@@ -209,10 +209,10 @@ export class UsersService {
   }
 
   async getUserVideos(userId: number): Promise<Video[]> {
-    // 获取用户发布的视频
+    // 获取用户发布的视频，包含审核记录
     const videos = await this.videosRepository.find({
       where: { userId },
-      relations: ['user'],
+      relations: ['user', 'reviews'],
       order: { createdAt: 'DESC' }
     });
     
@@ -290,5 +290,40 @@ export class UsersService {
     user.password = hashedNewPassword;
     
     await this.usersRepository.save(user);
+  }
+
+  // 添加新方法：获取用户观看视频的分类统计
+  async getUserViewCategoryStats(userId: number): Promise<any> {
+    // 查询用户的观看历史记录，关联视频信息以获取分类
+    const history = await this.viewHistoryRepository
+      .createQueryBuilder('history')
+      .innerJoinAndSelect('history.video', 'video')
+      .where('history.userId = :userId', { userId })
+      .getMany();
+    
+    // 统计各个分类的观看次数
+    const categoryStats = {
+      '文学': 0,
+      '理学': 0,
+      '计算机': 0,
+      '英语': 0,
+      '金融': 0,
+      '农学': 0,
+      '建筑学': 0
+    };
+    
+    // 计算每个分类的视频观看次数
+    history.forEach(record => {
+      const category = record.video.category || '计算机'; // 默认为计算机，以防数据不完整
+      categoryStats[category] = (categoryStats[category] || 0) + record.viewCount;
+    });
+    
+    // 转换为前端图表所需的格式
+    const result = Object.entries(categoryStats).map(([name, value]) => ({
+      name,
+      value
+    }));
+    
+    return result;
   }
 }

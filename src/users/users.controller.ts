@@ -9,6 +9,7 @@ import {
   UseGuards,
   Request,
   ParseIntPipe,
+  ForbiddenException,
 } from "@nestjs/common";
 import { UsersService } from "./users.service";
 import { JwtAuthGuard } from "../auth/jwt-auth.guard";
@@ -109,5 +110,16 @@ export class UsersController {
       updatePasswordDto.currentPassword,
       updatePasswordDto.newPassword
     );
+  }
+
+  @Get(':id/category-stats')
+  @UseGuards(JwtAuthGuard)
+  async getUserCategoryStats(@Param('id') id: string, @Request() req) {
+    // 确保用户只能获取自己的数据，或者是管理员
+    if (req.user.id !== +id && req.user.role !== 'admin') {
+      throw new ForbiddenException('您没有权限访问此数据');
+    }
+    
+    return this.usersService.getUserViewCategoryStats(+id);
   }
 }

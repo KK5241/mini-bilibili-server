@@ -8,6 +8,8 @@ import { UserVideoInteraction } from '../entities/user-video-interaction.entity'
 import { ViewHistory } from '../entities/view-history.entity';
 import { log } from 'console';
 import { UploadsService } from '../uploads/uploads.service';
+import { DataSource } from 'typeorm';
+import { VideoReview } from '../entities/video-review.entity';
 
 @Injectable()
 export class VideosService {
@@ -18,11 +20,13 @@ export class VideosService {
     private userVideoInteractionRepository: Repository<UserVideoInteraction>,
     @InjectRepository(ViewHistory)
     private viewHistoryRepository: Repository<ViewHistory>,
-    private uploadsService: UploadsService
+    private uploadsService: UploadsService,
+    private dataSource: DataSource
   ) {}
 
   async findAll(): Promise<Video[]> {
     const videos = await this.videosRepository.find({
+      where: { reviewStatus: 'approved' },
       relations: ['user'],
     });
     
@@ -32,6 +36,7 @@ export class VideosService {
 
   async findPopular(): Promise<Video[]> {
     const videos = await this.videosRepository.find({
+      where: { reviewStatus: 'approved' },
       relations: ['user'],
       order: {
         views: 'DESC',
@@ -45,6 +50,7 @@ export class VideosService {
 
   async findRecent(): Promise<Video[]> {
     const videos = await this.videosRepository.find({
+      where: { reviewStatus: 'approved' },
       relations: ['user'],
       order: {
         createdAt: 'DESC',
@@ -389,5 +395,30 @@ export class VideosService {
     }
     
     return processedVideo;
+  }
+
+  async getVideosByUserId(userId: number) {
+    const videos = await this.videosRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+
+    // 查询被拒绝视频的拒绝原因
+    for (const video of videos) {
+      if (video.reviewStatus === 'rejected') {
+        const review = await this.dataSource
+          .getRepository(VideoReview)
+          .findOne({
+            where: { videoId: video.id, status: 'rejected' },
+            order: { createdAt: 'DESC' },
+          });
+        
+        if (review) {
+          (video as any).rejectReason = review.reason;
+        }
+      }
+    }
+
+    return videos;
   }
 } 
